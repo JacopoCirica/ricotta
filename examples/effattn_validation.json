@@ -1,0 +1,25 @@
+{
+  "model": "Qwen/Qwen3.5-4B",
+  "n_prompts": 8,
+  "n_linear_layers": 24,
+  "n_full_layers": 8,
+  "cross_method_max_diff": 6.984919309616089e-10,
+  "reconstruction": {
+    "max_rel_err": 6.500358250994108e-07,
+    "mean_rel_err": 2.956428224836331e-07,
+    "n_layer_prompt_pairs": 192
+  },
+  "causality_max_above_diag": 0.0,
+  "linear_attention": {
+    "neg_mass_frac": 0.1121351346373558,
+    "rowsum_mean": 0.012828372343695568,
+    "norm_entropy": 0.6769433867864567,
+    "locality": 1.9370077983342882
+  },
+  "full_attention": {
+    "neg_mass_frac": NaN,
+    "rowsum_mean": NaN,
+    "norm_entropy": NaN,
+    "locality": NaN
+  }
+}

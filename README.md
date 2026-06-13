@@ -1,5 +1,7 @@
 # ricotta
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/JacopoCirica/ricotta/blob/main/examples/ricotta_colab_demo.ipynb)
+
 **Interpretability for LM post-training, at three altitudes.** One library to
 answer *what did my fine-tune / RL run actually change?* — from the attention
 patterns down to the internal features — unified by a single "diff two
