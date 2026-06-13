@@ -5,21 +5,21 @@
   "n_full_layers": 8,
   "cross_method_max_diff": 6.984919309616089e-10,
   "reconstruction": {
-    "max_rel_err": 6.500358250994108e-07,
-    "mean_rel_err": 2.956428224836331e-07,
+    "max_rel_err": 7.896302355977215e-07,
+    "mean_rel_err": 2.807066113477167e-07,
     "n_layer_prompt_pairs": 192
   },
   "causality_max_above_diag": 0.0,
   "linear_attention": {
     "neg_mass_frac": 0.1121351346373558,
-    "rowsum_mean": 0.012828372343695568,
-    "norm_entropy": 0.6769433867864567,
-    "locality": 1.9370077983342882
+    "rowsum_mean": 0.012828372229705565,
+    "norm_entropy": 0.6769433795385081,
+    "locality": 1.93700775372059
   },
   "full_attention": {
-    "neg_mass_frac": NaN,
-    "rowsum_mean": NaN,
-    "norm_entropy": NaN,
-    "locality": NaN
+    "neg_mass_frac": 0.0,
+    "rowsum_mean": 1.0,
+    "norm_entropy": 0.6990090464369676,
+    "locality": 2.7692224690090383
   }
 }
