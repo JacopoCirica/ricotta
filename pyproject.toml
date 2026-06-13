@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ricotta"
+version = "0.1.0"
+description = "Interpretability for LM post-training at three altitudes: attention, input attribution, and feature circuits"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Jacopo Cirica" }]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "torch>=2.1",
+    "transformers>=4.45",
+]
+
+[project.optional-dependencies]
+# feature-circuit layer — pulls in circuit-tracer (and downloads per-model
+# transcoders at runtime). circuit-tracer is not on PyPI, hence the git ref.
+circuits = ["circuit-tracer @ git+https://github.com/decoderesearch/circuit-tracer"]
+viz = ["ipython>=8.0"]
+dev = ["pytest>=8.0"]
+
+[tool.hatch.metadata]
+# the `circuits` extra references circuit-tracer by git URL (not on PyPI)
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["ricotta"]
