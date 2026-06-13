@@ -118,3 +118,45 @@ def cka_drift(lm_base: LM, lm_other: LM, texts: list[str],
                     name_base=getattr(lm_base.model.config, "_name_or_path", "base"),
                     name_other=getattr(lm_other.model.config, "_name_or_path", "other"),
                     n_vectors=n_vec)
+
+
+def cka_drift_chart(result: "CKADrift", html_file: str | None = None):
+    """Bar chart of representation drift (1 - CKA) per layer; the most-reshaped
+    layer is highlighted. Displays inline in a notebook and/or writes an SVG."""
+    import html as _html
+
+    layers = result.layers
+    drift = [1.0 - float(c) for c in result.cka]
+    n = len(layers)
+    maxd = max(drift) or 1.0
+    peak = int(np.argmax(drift))
+    W, H, ml, mt, ph = 680, 280, 55, 44, 180
+    pw = W - ml - 20
+    title = f"representation drift by layer (1 - CKA):  {result.name_base}  →  {result.name_other}"
+    p = [f'<svg width="100%" viewBox="0 0 {W} {H}" role="img" font-family="ui-monospace,Menlo,monospace">',
+         f'<title>CKA drift</title><desc>per-layer representation drift between two checkpoints</desc>',
+         f'<text x="20" y="22" font-size="13" fill="#222">{_html.escape(title)}</text>',
+         f'<text x="20" y="38" font-size="10" fill="#888">higher = more reshaped by training · {result.n_vectors} vectors/layer</text>',
+         f'<line x1="{ml}" y1="{mt+ph}" x2="{ml+pw}" y2="{mt+ph}" stroke="#ccc"/>']
+    for i, (l, d) in enumerate(zip(layers, drift)):
+        x = ml + pw * (i + 0.15) / n
+        bw = pw / n * 0.7
+        h = ph * d / maxd
+        color = "#d2643c" if i == peak else "#6b9bd1"
+        p.append(f'<rect x="{x:.1f}" y="{mt+ph-h:.1f}" width="{bw:.1f}" height="{max(h,1):.1f}" fill="{color}" rx="2"><title>layer {l}: CKA={result.cka[i]:.4f}</title></rect>')
+        p.append(f'<text x="{x+bw/2:.1f}" y="{mt+ph+14}" text-anchor="middle" font-size="9" fill="{"#222" if i==peak else "#888"}">L{l}</text>')
+        if i == peak:
+            p.append(f'<text x="{x+bw/2:.1f}" y="{mt+ph-h-5:.1f}" text-anchor="middle" font-size="10" font-weight="bold" fill="#222">{d:.3f}</text>')
+    p.append("</svg>")
+    svg = "".join(p)
+    if html_file:
+        with open(html_file, "w") as f:
+            f.write(f"<!DOCTYPE html><meta charset='utf-8'><body style='background:#fff;margin:0'>"
+                    f"<div style='width:680px;max-width:100%'>{svg}</div></body>")
+    try:
+        from IPython.display import HTML, display
+        display(HTML(svg))
+    except ImportError:
+        if not html_file:
+            raise RuntimeError("not in IPython; pass html_file=") from None
+    return svg

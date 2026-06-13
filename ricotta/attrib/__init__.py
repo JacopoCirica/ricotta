@@ -15,7 +15,7 @@ from .faithful import (
 from .models import LM
 from .relevance import build_judge_prompt, relevance_mask, top_t_positions
 from .render import show_attribution, show_diff
-from .spans import Span, SpanScore, aggregate, cot_faithfulness, span_ablation
+from .spans import Span, SpanScore, aggregate, cot_faithfulness, cot_faithfulness_chart, span_ablation
 
 __version__ = "0.2.0"
 __all__ = [
@@ -26,5 +26,5 @@ __all__ = [
     "comprehensiveness", "sufficiency", "deletion_curve", "insertion_curve", "agreement",
     "show_diff", "show_attribution",
     "attribute_embeds", "modality_contribution", "text_to_embeds",
-    "Span", "SpanScore", "aggregate", "span_ablation", "cot_faithfulness",
+    "Span", "SpanScore", "aggregate", "span_ablation", "cot_faithfulness", "cot_faithfulness_chart",
 ]

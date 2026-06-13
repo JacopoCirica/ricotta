@@ -67,7 +67,8 @@ except ImportError:  # circuit-tracer not installed
     circuits = None
 
 from . import hidden, probe
-from .hidden import CKADrift, LogitLens, cka_drift, linear_cka, logit_lens
+from .attrib import cot_faithfulness_chart
+from .hidden import CKADrift, LogitLens, cka_drift, cka_drift_chart, linear_cka, logit_lens
 from .probe import BeliefResult, Question, belief_curve, run_belief_experiment
 from .report import posttrain_report
 
@@ -92,6 +93,7 @@ __all__ = [
     "probe", "Question", "run_belief_experiment", "BeliefResult", "belief_curve",
     # hidden-state analysis: per-layer logit lens + CKA representation drift
     "hidden", "logit_lens", "LogitLens", "cka_drift", "CKADrift", "linear_cka",
+    "cka_drift_chart", "cot_faithfulness_chart",
     # unified
     "posttrain_report",
 ]

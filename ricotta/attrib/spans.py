@@ -101,3 +101,46 @@ def cot_faithfulness(
         "max_step_frac": max((max(0.0, d) for d in drops), default=0.0) / total,
         "load_bearing": [s.span.label for s in ranked if (s.ablation_drop or 0) > 1e-3],
     }
+
+
+def cot_faithfulness_chart(result, html_file: str | None = None):
+    """Horizontal bar chart of how much each reasoning step drives the answer
+    (ablation drop), sorted; the dominant step is highlighted. Accepts the dict
+    returned by ``cot_faithfulness`` or a list of ``SpanScore``. Displays inline
+    and/or writes an SVG."""
+    import html as _html
+
+    steps = result["ranked"] if isinstance(result, dict) else list(result)
+    steps = sorted(steps, key=lambda s: -(s.ablation_drop or 0.0))
+    n = len(steps)
+    vals = [float(s.ablation_drop or 0.0) for s in steps]
+    vmax = max((abs(v) for v in vals), default=1.0) or 1.0
+    W, lab, x0, row = 680, 150, 158, 26
+    H = 56 + n * row
+    bw = W - x0 - 60
+    p = [f'<svg width="100%" viewBox="0 0 {W} {H}" role="img" font-family="ui-monospace,Menlo,monospace">',
+         '<title>CoT faithfulness</title><desc>answer-probability drop when each reasoning step is ablated</desc>',
+         '<text x="20" y="22" font-size="13" fill="#222">CoT faithfulness — drop in p(answer) when each reasoning step is ablated</text>',
+         '<text x="20" y="38" font-size="10" fill="#888">longer bar = more load-bearing (the answer depends on it)</text>']
+    for i, s in enumerate(steps):
+        y = 50 + i * row
+        v = vals[i]
+        w = bw * abs(v) / vmax
+        color = "#d2643c" if i == 0 and v > 0 else ("#6b9bd1" if v >= 0 else "#bbb")
+        label = _html.escape(str(s.span.label)[:22])   # truncate raw, then escape
+        p.append(f'<text x="{lab}" y="{y+13}" text-anchor="end" font-size="11" fill="#444">{label}</text>')
+        p.append(f'<rect x="{x0}" y="{y+2}" width="{max(w,1):.1f}" height="15" fill="{color}" rx="2"/>')
+        p.append(f'<text x="{x0+max(w,1)+5:.1f}" y="{y+13}" font-size="10" fill="#888">{v:+.3f}</text>')
+    p.append("</svg>")
+    svg = "".join(p)
+    if html_file:
+        with open(html_file, "w") as f:
+            f.write(f"<!DOCTYPE html><meta charset='utf-8'><body style='background:#fff;margin:0'>"
+                    f"<div style='width:680px;max-width:100%'>{svg}</div></body>")
+    try:
+        from IPython.display import HTML, display
+        display(HTML(svg))
+    except ImportError:
+        if not html_file:
+            raise RuntimeError("not in IPython; pass html_file=") from None
+    return svg
