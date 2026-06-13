@@ -75,6 +75,31 @@ print(to_markdown(diff_graphs(ga, gb)))
 
 Each layer's full API is documented in its subpackage; see `examples/`.
 
+## Hybrid linear-attention models (Qwen3.5)
+
+Models like Qwen3.5 interleave a few softmax layers with many **Gated DeltaNet**
+linear-attention layers, which have no softmax matrix — so `output_attentions`
+silently drops them. ricotta reconstructs their **exact effective attention**:
+because a linear layer's output is a linear function of its values
+(`o_t = Σ_{j≤t} A[t,j] v_j`), we recover `A` by re-running the layer's own
+recurrence with indicator values — no approximation. It's verified by
+reconstruction (`Σ_j A[t,j] v_j` reproduces the real output to ~1e-7).
+
+```python
+from ricotta import get_hybrid_attention
+from ricotta.attn import hybrid_heatmap
+
+data = get_hybrid_attention("Qwen/Qwen3.5-4B", "The capital of Texas is Austin.")
+print(data)        # 32 layers [8 full + 24 linear], max_recon_err ~1e-7
+hybrid_heatmap(data, layer=30)   # signed effective-attention heatmap
+```
+
+Full-attention layers keep their real softmax weights at their true indices
+(e.g. 3, 7, …, 31); linear layers are reconstructed and **signed** (the delta
+rule subtracts as well as adds — rows are not a probability distribution).
+Needs `transformers >= 4.58` (so do *not* combine with the `circuits` extra,
+which pins older transformers — and circuits can't analyze Qwen3.5 anyway).
+
 ## What works where
 
 - **attn** — any HF model with eager attention (GQA fine).

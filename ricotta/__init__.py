@@ -10,7 +10,15 @@ imported lazily so the rest of ricotta works without it.
 """
 
 from . import attn, attrib
-from .attn import AttentionData, from_attentions, get_attention, head_view
+from .attn import (
+    AttentionData,
+    HybridAttentionData,
+    LayerAttention,
+    from_attentions,
+    get_attention,
+    get_hybrid_attention,
+    head_view,
+)
 from .attrib import (
     LM,
     Attribution,
@@ -65,6 +73,7 @@ __all__ = [
     "attn", "attrib", "circuits", "HAS_CIRCUITS",
     # attn
     "AttentionData", "get_attention", "from_attentions", "head_view",
+    "get_hybrid_attention", "HybridAttentionData", "LayerAttention",
     # attrib
     "LM", "attribute", "gradient_attribution", "integrated_gradients", "occlusion", "Attribution",
     "token_logprob_diff", "token_kl", "attribution_diff", "TokenDiff",
