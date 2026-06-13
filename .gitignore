@@ -5,3 +5,4 @@ __pycache__/
 examples/*.html
 examples/*.pt
 dist/
+examples/*.npz

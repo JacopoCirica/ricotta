@@ -100,6 +100,36 @@ rule subtracts as well as adds — rows are not a probability distribution).
 Needs `transformers >= 4.58` (so do *not* combine with the `circuits` extra,
 which pins older transformers — and circuits can't analyze Qwen3.5 anyway).
 
+## Hidden-state analysis (`ricotta.probe`, `ricotta.hidden`)
+
+Three ways to *evaluate the residual stream*, complementing attribution:
+
+```python
+from ricotta import LM, logit_lens, cka_drift, run_belief_experiment, Question
+
+lm = LM.load("Qwen/Qwen3-0.6B")
+
+# 1. belief probing — when/where is the answer linearly decodable? (needs [probe])
+res = run_belief_experiment(lm, questions, n_positions=30, cache_path="acts.npz")
+res.peak()          # (layer, offset, accuracy)
+
+# 2. per-layer logit lens — the model's running next-token guess across depth
+ll = logit_lens(lm, "The capital of France is")
+ll.trajectory(pos=-1)     # top-1 guess at each layer
+
+# 3. cross-checkpoint representation drift — did post-training reshape the geometry?
+d = cka_drift(LM.load("Qwen/Qwen3-0.6B"), LM.load("path/to/sdpo"), prompts)
+d.most_changed()    # layers with lowest CKA = most drift
+```
+
+`hidden_states(text)` on the `LM` wrapper returns the raw residual stream
+`(layers, seq, d)`. **Belief probing reproduces** the method of
+[Exploring belief states in LLM CoT](https://www.lesswrong.com/posts/ncpdXznDMxDZDyn6J);
+on a *reasoning-free* task (numeric comparison) the answer is decodable from the
+start rather than emerging late — an honest reminder that belief dynamics are
+task-dependent (see `examples/belief_probe_demo.py`). CKA drift is the
+diff-two-checkpoints verb applied to representations.
+
 ## What works where
 
 - **attn** — any HF model with eager attention (GQA fine).

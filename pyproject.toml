@@ -23,7 +23,8 @@ dependencies = [
 # transcoders at runtime). circuit-tracer is not on PyPI, hence the git ref.
 circuits = ["circuit-tracer @ git+https://github.com/decoderesearch/circuit-tracer"]
 viz = ["ipython>=8.0"]
-dev = ["pytest>=8.0"]
+probe = ["scikit-learn>=1.3"]   # residual-stream belief probing
+dev = ["pytest>=8.0", "scikit-learn>=1.3"]
 
 [tool.hatch.metadata]
 # the `circuits` extra references circuit-tracer by git URL (not on PyPI)

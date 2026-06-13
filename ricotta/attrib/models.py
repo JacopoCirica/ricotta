@@ -84,3 +84,17 @@ class LM:
     def next_token_logits(self, input_ids: torch.Tensor) -> torch.Tensor:
         """Full logits, shape (seq, vocab); row i predicts token i+1."""
         return self.model(input_ids).logits[0].float()
+
+    @torch.no_grad()
+    def hidden_states(self, text, layers: list[int] | None = None) -> torch.Tensor:
+        """Residual-stream activations for ``text`` (str or input_ids).
+
+        Returns float32 (n_selected_layers, seq, d_model) on CPU. Index 0 of the
+        model's hidden_states is the embedding layer; layers 1..L are block
+        outputs. ``layers`` selects a subset (default: all, including embeddings).
+        """
+        input_ids = self.encode(text) if isinstance(text, str) else text.to(self.device)
+        out = self.model(input_ids, output_hidden_states=True)
+        hs = out.hidden_states                                  # tuple (L+1) of (1, seq, d)
+        idx = range(len(hs)) if layers is None else layers
+        return torch.stack([hs[i][0].float().cpu() for i in idx])
