@@ -18,12 +18,24 @@ without it.
 
 ## Install
 
+The distribution is **`ricotta-interp`**; the import name is **`ricotta`**
+(the bare `ricotta` on PyPI is held by an abandoned 2017 package):
+
 ```bash
-pip install git+https://github.com/JacopoCirica/ricotta.git           # attn + attrib
-pip install "git+https://github.com/JacopoCirica/ricotta.git#egg=ricotta[circuits]"  # + circuits
+pip install ricotta-interp              # attn + attrib  (torch + transformers)
+pip install "ricotta-interp[circuits]"  # + feature-circuit layer (circuit-tracer)
 ```
 
-(Not yet on PyPI — the bare name is held by an abandoned 2017 package.)
+```python
+import ricotta   # import name stays `ricotta`
+```
+
+Or straight from GitHub:
+
+```bash
+pip install git+https://github.com/JacopoCirica/ricotta.git
+pip install "ricotta-interp[circuits] @ git+https://github.com/JacopoCirica/ricotta.git"
+```
 
 ## The headline: one post-training report
 

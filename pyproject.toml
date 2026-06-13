@@ -3,7 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ricotta"
+# distribution name is `ricotta-interp` (the bare `ricotta` is held by an
+# abandoned 2017 PyPI package); the import package is still `ricotta`.
+name = "ricotta-interp"
 version = "0.1.0"
 description = "Interpretability for LM post-training at three altitudes: attention, input attribution, and feature circuits"
 readme = "README.md"
