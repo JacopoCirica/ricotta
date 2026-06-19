@@ -6,3 +6,4 @@ examples/*.html
 examples/*.pt
 dist/
 examples/*.npz
+.venv-q35/
