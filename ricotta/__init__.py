@@ -66,8 +66,17 @@ try:  # optional: requires the `circuits` extra (circuit-tracer + transcoders)
 except ImportError:  # circuit-tracer not installed
     circuits = None
 
-from . import hidden, probe, tts
+from . import hidden, monitor, probe, tts
 from .attrib import cot_faithfulness_chart
+from .monitor import (
+    GapResult,
+    MonitorabilityDiff,
+    MonitorabilitySummary,
+    latent_reasoning_gap,
+    monitorability_chart,
+    monitorability_diff,
+    monitorability_over_dataset,
+)
 from .tts import TTSResult, TTSStep, true_thinking_score, tts_chart
 from .hidden import CKADrift, LogitLens, cka_drift, cka_drift_chart, linear_cka, logit_lens
 from .probe import BeliefResult, Question, belief_curve, run_belief_experiment
@@ -94,6 +103,9 @@ __all__ = [
     "probe", "Question", "run_belief_experiment", "BeliefResult", "belief_curve",
     # tts — True Thinking Score (causal CoT step contribution)
     "tts", "true_thinking_score", "TTSResult", "TTSStep", "tts_chart",
+    # monitor — CoT monitorability (latent-reasoning gap, checkpoint diff)
+    "monitor", "latent_reasoning_gap", "GapResult", "monitorability_over_dataset",
+    "MonitorabilitySummary", "monitorability_diff", "MonitorabilityDiff", "monitorability_chart",
     # hidden-state analysis: per-layer logit lens + CKA representation drift
     "hidden", "logit_lens", "LogitLens", "cka_drift", "CKADrift", "linear_cka",
     "cka_drift_chart", "cot_faithfulness_chart",
