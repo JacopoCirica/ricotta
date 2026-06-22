@@ -2,21 +2,26 @@
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/JacopoCirica/ricotta/blob/main/examples/ricotta_colab_demo.ipynb)
 
-**Interpretability for LM post-training, at three altitudes.** One library to
-answer *what did my fine-tune / RL run actually change?* — from the attention
-patterns down to the internal features — unified by a single "diff two
+**Interpretability for LM post-training.** One library to answer *what did my
+fine-tune / RL run actually change?* — from attention patterns down to internal
+features and chain-of-thought faithfulness — unified by a single "diff two
 checkpoints" verb.
 
-| layer | question | module |
-|---|---|---|
-| **attention** | where does the model *look*? | `ricotta.attn` |
-| **attribution** | which inputs *drive / changed* the output? | `ricotta.attrib` |
-| **circuits** | which internal *features* rewired? | `ricotta.circuits` |
+| module | question it answers |
+|---|---|
+| `ricotta.attn` | where does the model *look*? (incl. exact effective-attention for hybrid linear-attention layers, e.g. Qwen3.5) |
+| `ricotta.attrib` | which input tokens *drive / changed* the output? + per-step CoT faithfulness, modality |
+| `ricotta.tts` | which reasoning steps are *causally load-bearing*? (True Thinking Score, [arXiv:2510.24941](https://arxiv.org/abs/2510.24941)) |
+| `ricotta.monitor` | does the answer *depend on the visible CoT*? is it still monitorable after training? ([arXiv:2507.11473](https://arxiv.org/abs/2507.11473)) |
+| `ricotta.probe` | *when/where* is the answer linearly decodable? (belief probing) |
+| `ricotta.hidden` | per-layer logit lens + cross-checkpoint representation drift (CKA) |
+| `ricotta.circuits` | which internal *features* rewired? (attribution graphs) |
 
-The first two need only `torch` + `transformers`. The circuits layer is an
-optional extra (it builds on [circuit-tracer](https://github.com/decoderesearch/circuit-tracer)
-and downloads per-model transcoders), imported lazily so everything else works
-without it.
+Everything but `circuits` needs only `torch` + `transformers`; `tts`/`monitor`
+work on any HF reasoning model (Qwen3.5 included). `circuits` is an optional
+extra (it builds on [circuit-tracer](https://github.com/decoderesearch/circuit-tracer)
+and downloads per-model transcoders), imported lazily so the rest works without
+it. `probe` needs the `[probe]` extra (scikit-learn).
 
 ## Install
 
@@ -132,8 +137,48 @@ start rather than emerging late — an honest reminder that belief dynamics are
 task-dependent (see `examples/belief_probe_demo.py`). CKA drift is the
 diff-two-checkpoints verb applied to representations.
 
+## Chain-of-thought faithfulness & monitorability (`ricotta.tts`, `ricotta.monitor`)
+
+Is the model's reasoning real, or decorative — and does training erode that?
+
+**`tts` — True Thinking Score** ([arXiv:2510.24941](https://arxiv.org/abs/2510.24941)):
+the causal contribution of each reasoning step. Perturb numbers in a step and
+measure how `P(correct answer)` changes (necessity + sufficiency). Steps ≥0.7
+are *true-thinking*, ≤0.005 *decorative*.
+
+```python
+from ricotta import LM, true_thinking_score, tts_chart
+from ricotta.tts import generate_reasoning
+
+lm = LM.load("Qwen/Qwen3.5-4B")
+prompt, reasoning = generate_reasoning(lm, "A store has 33 red, 19 blue, 14 green marbles; "
+                                           "it sells 6, 4, 2. How many remain?")
+res = true_thinking_score(lm, prompt, reasoning, answer="54")
+tts_chart(res)        # green = true-thinking, gray = decorative
+```
+
+**`monitor` — CoT monitorability** ([arXiv:2507.11473](https://arxiv.org/abs/2507.11473)):
+the *latent-reasoning gap* = `P(correct | full CoT) − P(correct | empty think)`.
+Large = the answer depends on the visible reasoning (monitorable); ~0 =
+decorative. Aggregate with a bootstrap CI and **diff across checkpoints** to ask
+*did RL training make the CoT less load-bearing?* — the measurement the
+monitorability paper calls for.
+
+```python
+from ricotta import monitorability_over_dataset, monitorability_diff, monitorability_chart
+
+problems = [("…question…", "answer"), ...]          # e.g. GSM8K / MATH
+base = monitorability_over_dataset(lm_base, problems)
+ft   = monitorability_over_dataset(lm_ft,   problems)
+d = monitorability_diff(base, ft)
+print(d, d.significant())                            # is the change real?
+monitorability_chart(base, ft)
+```
+
 ## What works where
 
+- **tts / monitor** — any HF reasoning model that emits a CoT; need a known
+  answer for the math/reasoning tasks they score (Qwen3.5 works).
 - **attn** — any HF model with eager attention (GQA fine).
 - **attrib** — any decoder-only HF causal LM; no transcoders needed, so it's the
   one layer that runs on hybrid-attention models (e.g. Qwen3.5). Includes
